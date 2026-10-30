@@ -20,6 +20,7 @@ def main():
     bundle=ROOT/'dist/Shilu'
     for name in ('README.md','LICENSE'):
         shutil.copy2(ROOT/name,bundle/name)
+    shutil.copytree(ROOT/'licenses',bundle/'licenses',dirs_exist_ok=True)
     for folder in ('qq message','wechat message'):
         (bundle/'materials'/folder).mkdir(parents=True,exist_ok=True)
     if os.name=='nt':

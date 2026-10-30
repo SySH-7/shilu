@@ -25,7 +25,7 @@ import uuid
 import zipfile
 from xml.etree import ElementTree
 
-VERSION = "shilu-0.1.1"
+VERSION = "shilu-0.1.2"
 from .platform_support import FileLock, default_root
 TZ = timezone(timedelta(hours=8))
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"

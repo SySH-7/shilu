@@ -5,7 +5,7 @@ import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
 TOP={'README.md','RELEASE.md','LICENSE','pyproject.toml','requirements-build.txt','launch.py','.gitignore'}
-PREFIXES=('src/shilu/','tests/','scripts/','.github/workflows/')
+PREFIXES=('src/shilu/','tests/','scripts/','.github/workflows/','licenses/')
 PATTERNS=[re.compile(rb'gh[pousr]_[A-Za-z0-9]{20,}'),re.compile(rb'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'),
           re.compile(rb'/Users/[A-Za-z0-9_.-]+/'),re.compile(rb'[A-Z]:\\Users\\[A-Za-z0-9_.-]+\\')]
 
