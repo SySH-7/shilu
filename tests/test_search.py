@@ -1,3 +1,4 @@
+from contextlib import closing
 """Independent offline search contract checks; all fixtures are synthetic."""
 from pathlib import Path
 import sqlite3
@@ -15,7 +16,7 @@ class ArchiveSearchContract(unittest.TestCase):
         self.root = Path(self.temp.name)
         db = self.root / 'data/index.sqlite3'
         db.parent.mkdir(parents=True)
-        with sqlite3.connect(db) as c:
+        with closing(sqlite3.connect(db)) as c, c:
             c.executescript('''
             CREATE TABLE archive_sources(id TEXT PRIMARY KEY,title TEXT,metadata_json TEXT DEFAULT '{}');
             CREATE TABLE archive_records(id INTEGER PRIMARY KEY,source_id TEXT,ordinal INTEGER,text TEXT,
@@ -85,19 +86,19 @@ class ArchiveSearchContract(unittest.TestCase):
         self.assertEqual(self.ids(q='数据库'),original)
 
     def test_replaced_same_id_removes_stale_fts_tokens(self):
-        with searcher.connect(self.root) as c:
+        with closing(searcher.connect(self.root)) as c, c:
             c.execute("UPDATE archive_records SET text='全新唯一内容' WHERE id=1")
         searcher.sync_index(self.root)
         self.assertEqual(self.ids(q='全新唯一内容'),[1])
         self.assertNotIn(1,self.ids(q='图书馆'))
-        with searcher.connect(self.root) as c:
+        with closing(searcher.connect(self.root)) as c, c:
             gram=searcher.query_grams(searcher.normalize('图书'))[0]
             candidates=[r[0] for r in c.execute('SELECT rowid FROM archive_fts WHERE archive_fts MATCH ?',(gram,))]
             self.assertNotIn(1,candidates)
 
     def test_missing_fts_derived_table_rebuilds_from_records(self):
         before=self.ids(q='数据库')
-        with searcher.connect(self.root) as c: c.execute('DROP TABLE archive_fts')
+        with closing(searcher.connect(self.root)) as c, c: c.execute('DROP TABLE archive_fts')
         searcher.sync_index(self.root,rebuild=True)
         self.assertEqual(self.ids(q='数据库'),before)
 

@@ -9,7 +9,7 @@ import sys
 def default_root():
     if getattr(sys, 'frozen', False):
         return Path(sys.executable).resolve().parent
-    return Path(__file__).resolve().parents[2]
+    return Path.cwd().resolve()
 
 
 class FileLock:

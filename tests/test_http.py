@@ -24,7 +24,7 @@ class ArchiveHTTPContract(unittest.TestCase):
         (Path(self.temp.name) / 'outside.txt').write_text('synthetic-outside-marker')
         db = search.db_path(self.root)
         db.parent.mkdir(parents=True)
-        with sqlite3.connect(db) as c:
+        with closing(sqlite3.connect(db)) as c, c:
             c.executescript(SCHEMA)
             c.execute("INSERT INTO archive_sources VALUES ('a','合成资料','qq_message','合成会话','fixture','{}')")
             fixture = [
@@ -90,20 +90,20 @@ class ArchiveHTTPContract(unittest.TestCase):
         self.assertEqual(self.request('/api/search?start=not-a-date')[0], 400)
 
     def test_changed_record_updates_fts_without_stale_postings(self):
-        with sqlite3.connect(search.db_path(self.root)) as c:
+        with closing(sqlite3.connect(search.db_path(self.root))) as c, c:
             c.execute("UPDATE archive_records SET text='更改后的独立新词测试。' WHERE id=1")
         self.assertEqual(search.sync_index(self.root)['changed'], 1)
         self.assertEqual(search.search(self.root, q='独立新词')['total'], 1)
         self.assertEqual(search.search(self.root, q='虚构中文')['total'], 0)
-        with sqlite3.connect(search.db_path(self.root)) as c:
+        with closing(sqlite3.connect(search.db_path(self.root))) as c, c:
             c.execute("INSERT INTO archive_fts(archive_fts,rank) VALUES('integrity-check',1)")
 
     def test_rebuild_recovers_missing_fts_table(self):
-        with sqlite3.connect(search.db_path(self.root)) as c:
+        with closing(sqlite3.connect(search.db_path(self.root))) as c, c:
             c.execute('DROP TABLE archive_fts')
         self.assertEqual(search.sync_index(self.root, rebuild=True)['indexed'], 2)
         self.assertEqual(search.search(self.root, q='虚构中文')['total'], 1)
-        with sqlite3.connect(search.db_path(self.root)) as c:
+        with closing(sqlite3.connect(search.db_path(self.root))) as c, c:
             c.execute("INSERT INTO archive_fts(archive_fts,rank) VALUES('integrity-check',1)")
 
     def test_update_reserves_state_before_worker_runs_and_blocks_shutdown(self):
