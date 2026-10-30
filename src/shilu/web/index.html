@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>拾录 · 本地资料检索</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div><div class="brand">拾录 <span>本地资料检索</span></div><p class="subtitle">聊天、笔记与文章，按原文查找。</p></div>
+    <div class="header-actions"><span class="local-badge">仅本机 · 离线可用</span><button id="update-btn" type="button">更新资料</button><button id="files-btn" type="button" class="quiet">导入明细</button><button id="quit-btn" type="button" class="quiet">退出</button></div>
+  </header>
+  <main>
+    <section class="search-panel" aria-label="检索条件">
+      <form id="search-form">
+        <label for="query" class="section-label">查找资料</label>
+        <div class="search-row"><input id="query" name="q" type="search" placeholder="输入关键词，例如：毕业 旅行；短语可加英文双引号" autocomplete="off" autofocus><button class="primary" id="search-btn" type="submit">搜索</button></div>
+        <div class="search-options"><label><input id="phrase" type="checkbox"> 将输入内容作为准确短语</label><span>多个关键词默认同时匹配；支持 1～2 个汉字。</span></div>
+        <div class="filter-grid">
+          <label>开始日期<input id="start" name="start" type="date"></label>
+          <label>结束日期<input id="end" name="end" type="date"></label>
+          <label>资料类型<select id="kind" name="kind"><option value="">全部类型</option></select></label>
+          <label>独立来源<select id="source" name="source"><option value="">全部来源</option></select></label>
+          <label>会话<select id="conversation" name="conversation"><option value="">全部会话</option></select></label>
+          <label>说话人<select id="speaker" name="speaker"><option value="">全部说话人</option></select></label>
+        </div>
+        <div class="filter-footer"><div class="scope-switch" aria-label="搜索范围"><label><input name="scope" type="radio" value="all" checked> 全部内容</label><label><input name="scope" type="radio" value="self"> 仅本人发言</label></div><button class="text-button" id="reset-btn" type="button">清空条件</button></div>
+        <p class="scope-note" id="scope-note">“仅本人发言”只包含身份已明确的聊天消息。日期筛选不包含时间未知的记录。</p>
+      </form>
+    </section>
+    <section class="library-status" aria-label="资料库状态"><div id="library-counts">正在读取资料库…</div><div id="update-state" aria-live="polite"></div></section>
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <section aria-label="检索结果" class="results-section">
+      <div class="results-heading"><h1>检索结果</h1><span id="result-summary" aria-live="polite"></span></div>
+      <div id="results" aria-busy="false"><div class="empty-state">输入关键词开始检索，也可直接按条件浏览资料。</div></div>
+      <nav id="pagination" class="pagination" aria-label="结果分页" hidden><button id="prev-btn" type="button">上一页</button><span id="page-label"></span><button id="next-btn" type="button">下一页</button></nav>
+    </section>
+  </main>
+  <footer>原件保留在 <code>materials</code>。新资料放入此目录后，点击“更新资料”。</footer>
+  <dialog id="context-dialog" class="context-dialog" aria-labelledby="context-title">
+    <div class="dialog-header"><div><h2 id="context-title">原文与上下文</h2><p id="context-meta"></p></div><button type="button" class="close-dialog" aria-label="关闭上下文">关闭</button></div>
+    <div class="dialog-body"><div id="origin-panel" class="origin-panel"></div><div class="context-controls"><button id="more-before" type="button">向前再看 5 条</button><span id="context-range"></span><button id="more-after" type="button">向后再看 5 条</button></div><div id="context-records" aria-live="polite"></div></div>
+  </dialog>
+  <dialog id="files-dialog" class="files-dialog" aria-labelledby="files-title">
+    <div class="dialog-header"><div><h2 id="files-title">导入明细</h2><p>每个文件的处理状态与原因；重复文件保留出处映射。</p></div><button type="button" class="close-dialog" aria-label="关闭导入明细">关闭</button></div>
+    <div class="dialog-body"><label class="files-filter">查看状态<select id="file-status"><option value="failed">解析失败 / 暂不支持</option><option value="excluded">已排除</option><option value="duplicate">重复文件</option><option value="imported">成功导入</option><option value="">全部文件</option></select></label><p id="files-summary" aria-live="polite"></p><div id="file-list"></div></div>
+  </dialog>
+</body>
+</html>

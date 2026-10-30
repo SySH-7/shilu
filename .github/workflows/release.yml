@@ -1,0 +1,70 @@
+name: Build and release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            target: windows-x64
+            arch: x64
+          - os: macos-15
+            target: macos-arm64
+            arch: arm64
+          - os: macos-15-intel
+            target: macos-x64
+            arch: x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: ${{ matrix.arch }}
+      - name: Install build dependencies
+        run: python -m pip install -r requirements-build.txt .
+      - name: Check release source boundary
+        run: python scripts/check_public_tree.py
+      - name: Test synthetic fixtures
+        run: python -m unittest discover -s tests -v
+      - name: Build portable package
+        run: python scripts/build.py --target ${{ matrix.target }}
+      - name: Test frozen executable
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            python scripts/smoke.py dist/Shilu/Shilu.exe
+          else
+            python scripts/smoke.py dist/Shilu/Shilu
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Shilu-${{ matrix.target }}
+          path: release/*.zip
+          if-no-files-found: error
+  publish:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: packages
+          merge-multiple: true
+      - name: Publish tested archives
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          cd packages
+          sha256sum *.zip > SHA256SUMS.txt
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "拾录 Shilu $GITHUB_REF_NAME" --notes-file ../RELEASE.md --verify-tag *.zip SHA256SUMS.txt

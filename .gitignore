@@ -1,0 +1,23 @@
+# Local archives and all generated copies
+/materials/
+/data/
+/reports/
+/backups/
+*.sqlite*
+*.db
+*.jsonl
+.env
+.env.*
+*.key
+*.pem
+# Build and editor files
+/build/
+/dist/
+/release/
+.venv/
+*.egg-info/
+*.spec
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
